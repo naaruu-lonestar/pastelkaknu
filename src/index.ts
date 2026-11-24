@@ -1,6 +1,7 @@
 import { Hono } from "hono";
 import type { AppEnv } from "./types";
 import { fail } from "./lib/http";
+import { databaseIssue } from "./lib/errors";
 import publicRoutes from "./routes/public";
 import adminRoutes from "./routes/admin";
 
@@ -63,9 +64,42 @@ app.get("/", (c) =>
 app.get("/api/health", async (c) => {
   try {
     await c.env.DB.prepare("SELECT 1 AS ok").first();
-    return c.json({ status: "ok" });
-  } catch {
-    return c.json({ status: "degraded" }, 503);
+  } catch (error) {
+    const issue = databaseIssue(error);
+    return c.json(
+      {
+        status: "degraded",
+        database: { connected: false, code: issue?.code ?? "DB_UNAVAILABLE" },
+        hint: issue?.message ?? "Database tidak bisa dihubungi.",
+      },
+      503,
+    );
+  }
+
+  try {
+    const products = await c.env.DB.prepare(
+      "SELECT COUNT(*) AS total FROM products WHERE is_active = 1",
+    ).first<{ total: number }>();
+    const admins = await c.env.DB.prepare(
+      "SELECT COUNT(*) AS total FROM admin_users",
+    ).first<{ total: number }>();
+
+    return c.json({
+      status: "ok",
+      database: { connected: true, schemaReady: true },
+      activeProducts: Number(products?.total ?? 0),
+      adminConfigured: Number(admins?.total ?? 0) > 0,
+    });
+  } catch (error) {
+    const issue = databaseIssue(error);
+    return c.json(
+      {
+        status: "degraded",
+        database: { connected: true, schemaReady: false, code: issue?.code ?? "DB_SCHEMA_MISSING" },
+        hint: issue?.message ?? "Skema database belum siap.",
+      },
+      503,
+    );
   }
 });
 
@@ -76,6 +110,15 @@ app.notFound((c) => fail(c, 404, "Endpoint tidak ditemukan."));
 
 app.onError((error, c) => {
   console.error("Unhandled error:", error);
+
+  // Masalah database bukan kesalahan pemrograman: jawab 503 dengan pesan yang
+  // bisa ditindaklanjuti, bukan 500 generik tanpa petunjuk.
+  const issue = databaseIssue(error);
+  if (issue) {
+    c.header("Cache-Control", "no-store");
+    return c.json({ error: { code: issue.code, message: issue.message } }, 503);
+  }
+
   return fail(c, 500, "Terjadi kesalahan pada server.");
 });
 

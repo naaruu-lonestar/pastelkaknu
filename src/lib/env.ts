@@ -30,5 +30,8 @@ export function createEnv(): Env {
     BUSINESS_NAME: process.env.BUSINESS_NAME?.trim() || "Pastel Ibu",
     WHATSAPP_NUMBER: process.env.WHATSAPP_NUMBER?.trim() || "6281234567890",
     ADMIN_SESSION_TTL_HOURS: process.env.ADMIN_SESSION_TTL_HOURS?.trim() || "8",
+    ADMIN_EMAIL: process.env.ADMIN_EMAIL?.trim(),
+    ADMIN_PASSWORD: process.env.ADMIN_PASSWORD,
+    ADMIN_NAME: process.env.ADMIN_NAME?.trim(),
   };
 }

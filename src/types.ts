@@ -30,6 +30,10 @@ export interface Env {
   BUSINESS_NAME?: string;
   WHATSAPP_NUMBER?: string;
   ADMIN_SESSION_TTL_HOURS?: string;
+  /** Hanya dipakai bootstrap: membuat akun admin pertama saat tabel masih kosong. */
+  ADMIN_EMAIL?: string;
+  ADMIN_PASSWORD?: string;
+  ADMIN_NAME?: string;
 }
 
 export interface AdminUser {

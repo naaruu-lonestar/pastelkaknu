@@ -90,11 +90,19 @@ async function main() {
   }
 
   const healthy = health.status === 200 && health.payload?.status === "ok";
-  log("health", healthy, `${health.status} ${health.payload?.status ?? ""}`.trim());
+  log(
+    "health",
+    healthy,
+    `${health.status} ${health.payload?.status ?? ""} ${
+      health.payload?.database?.code ?? ""
+    }`.trim(),
+  );
   if (!healthy) {
-    console.log(
-      "\nBerhenti: URL tidak menjawab seperti Worker Pastel Ibu. Cek domain, atau pastikan preset Vercel = Other.",
-    );
+    const hint =
+      health.payload?.hint ||
+      health.payload?.error?.message ||
+      "URL tidak menjawab seperti aplikasi Pastel Ibu. Cek domain, atau pastikan preset Vercel = Other.";
+    console.log(`\nBerhenti: ${hint}`);
     return;
   }
 

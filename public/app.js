@@ -118,6 +118,40 @@ function errorMessage(payload, fallback) {
   return typeof message === "string" && message.trim() ? message : fallback;
 }
 
+function delay(ms) {
+  return new Promise((resolve) => window.setTimeout(resolve, ms));
+}
+
+/**
+ * Ambil JSON dengan satu percobaan ulang untuk gangguan sesaat (cold start,
+ * jaringan). Error 4xx tidak diulang karena isinya tidak akan berubah.
+ */
+async function fetchJson(url) {
+  let lastError = null;
+
+  for (let attempt = 0; attempt < 2; attempt += 1) {
+    let retryable = true;
+
+    try {
+      const { response, payload } = await getJson(url);
+      if (response.ok && payload) return payload;
+
+      lastError = new Error(
+        errorMessage(payload, `Server menolak permintaan (${response.status}).`),
+      );
+      // 4xx (validasi, 404) tidak akan berubah bila diulang.
+      retryable = response.status >= 500;
+    } catch (error) {
+      lastError = error instanceof Error ? error : new Error(String(error));
+    }
+
+    if (!retryable) break;
+    if (attempt === 0) await delay(700);
+  }
+
+  throw lastError || new Error("Server tidak merespons.");
+}
+
 /* ---------------------------------------------------------------- render */
 
 function pastelArtSvg() {
@@ -595,22 +629,13 @@ function populateSelect(select, options, placeholder) {
 }
 
 async function loadConfigAndProducts() {
-  const [configResult, productsResult] = await Promise.all([
-    getJson(API.config),
-    getJson(API.products),
+  const [config, products] = await Promise.all([
+    fetchJson(API.config),
+    fetchJson(API.products),
   ]);
 
-  if (!configResult.response.ok || !configResult.payload) {
-    throw new Error("Konfigurasi layanan tidak tersedia.");
-  }
-  state.config = configResult.payload;
-
-  if (!productsResult.response.ok || !productsResult.payload) {
-    throw new Error("Katalog produk tidak tersedia.");
-  }
-  state.products = Array.isArray(productsResult.payload.products)
-    ? productsResult.payload.products
-    : [];
+  state.config = config;
+  state.products = Array.isArray(products.products) ? products.products : [];
 
   const { business, options, today, dailyCapacity } = state.config;
 
@@ -671,26 +696,59 @@ function init() {
   el.orderForm.addEventListener("submit", submitOrder);
   el.orderAgain.addEventListener("click", resetForNewOrder);
 
-  loadConfigAndProducts().catch((error) => {
-    console.error(error);
-    el.productGrid.replaceChildren();
-    el.productGrid.setAttribute("aria-busy", "false");
-    el.orderItems.setAttribute("aria-busy", "false");
+  startCatalog();
+}
 
-    const note = document.createElement("p");
-    note.className = "product-desc";
-    note.textContent = "Katalog gagal dimuat.";
-    el.productGrid.append(note);
+function startCatalog() {
+  el.productGrid.setAttribute("aria-busy", "true");
 
-    el.productsNote.hidden = false;
-    el.productsNote.textContent =
-      "Katalog produk sedang tidak bisa dimuat. Muat ulang halaman atau hubungi admin lewat WhatsApp.";
+  loadConfigAndProducts()
+    .then(() => {
+      el.productsNote.hidden = true;
+      el.productsNote.textContent = "";
+      el.formAlert.hidden = true;
+      el.formAlert.textContent = "";
+      el.submit.disabled = false;
+    })
+    .catch(showCatalogError);
+}
 
-    el.formAlert.textContent =
-      "Form pesanan belum siap karena data katalog gagal dimuat. Muat ulang halaman ini.";
-    el.formAlert.hidden = false;
-    el.submit.disabled = true;
+/** Tampilkan penyebab kegagalan asli dari server + tombol coba lagi. */
+function showCatalogError(error) {
+  console.error(error);
+
+  const detail = error && error.message ? error.message : "Katalog produk tidak tersedia.";
+
+  const card = document.createElement("article");
+  card.className = "product-card";
+
+  const note = document.createElement("p");
+  note.className = "product-desc";
+  note.textContent = `Katalog belum bisa dimuat. ${detail}`;
+
+  const retry = document.createElement("button");
+  retry.type = "button";
+  retry.className = "btn btn-ghost";
+  retry.textContent = "Coba lagi";
+  retry.addEventListener("click", () => {
+    retry.disabled = true;
+    retry.textContent = "Memuat…";
+    startCatalog();
   });
+
+  card.append(note, retry);
+  el.productGrid.replaceChildren(card);
+  el.productGrid.setAttribute("aria-busy", "false");
+  el.orderItems.setAttribute("aria-busy", "false");
+
+  el.productsNote.hidden = false;
+  el.productsNote.textContent =
+    "Katalog produk sedang tidak bisa dimuat. Coba lagi, atau hubungi admin lewat WhatsApp.";
+
+  el.formAlert.textContent =
+    "Form pesanan belum siap karena data katalog belum termuat. Tekan “Coba lagi” pada bagian menu pastel.";
+  el.formAlert.hidden = false;
+  el.submit.disabled = true;
 }
 
 init();

@@ -116,12 +116,19 @@ Tambahkan untuk **Production** dan **Preview**:
 | `BUSINESS_NAME` | `Pastel Ibu` | nama usaha |
 | `WHATSAPP_NUMBER` | `6281234567890` | ganti dengan nomor asli |
 | `ADMIN_SESSION_TTL_HOURS` | `8` | 1–72 |
+| `ADMIN_EMAIL` | `admin@pastelibu.id` | opsional, akun admin awal |
+| `ADMIN_PASSWORD` | password minimal 10 karakter | opsional, dipakai hanya saat tabel admin kosong |
 
 Jangan menaruh nilai ini di file mana pun di repo. Setelah env tersimpan, deploy.
 
 ### 5.3 Isi database produksi
 
-Dari mesin lokal, dengan env database produksi:
+Database Turso yang baru dibuat belum punya tabel. Aplikasi menyiapkannya sendiri
+pada permintaan pertama: tabel dibuat, dua produk awal diisi, dan akun admin dibuat
+dari `ADMIN_EMAIL` + `ADMIN_PASSWORD` bila tabel admin masih kosong. Jadi cukup buka
+`https://<domain>/api/health` setelah deploy.
+
+Langkah manual hanya perlu bila ingin menyiapkan database dari mesin lokal:
 
 ```bash
 TURSO_DATABASE_URL=libsql://... TURSO_AUTH_TOKEN=... npm run db:push
@@ -129,6 +136,10 @@ TURSO_DATABASE_URL=libsql://... TURSO_AUTH_TOKEN=... \
   ADMIN_EMAIL=admin@pastelibu.id ADMIN_PASSWORD='password-panjang' \
   npm run admin:create
 ```
+
+Setelah akun admin terbentuk, hapus `ADMIN_PASSWORD` dari Environment Variables
+Vercel lalu redeploy. Skema tidak pernah ditimpa dan data admin tidak direset oleh
+bootstrap.
 
 ### 5.4 Verifikasi
 
@@ -145,7 +156,7 @@ produksi; pakai `--keep` bila ingin dibiarkan berstatus `PENDING`. Tanpa
 
 Pemeriksaan manual yang setara:
 
-- `https://<domain>/api/health` → `{"status":"ok"}`.
+- `https://<domain>/api/health` → `{"status":"ok","database":{"connected":true,"schemaReady":true},"activeProducts":2,"adminConfigured":true}`.
 - `https://<domain>/` menampilkan dua produk.
 - `https://<domain>/admin/` bisa login dan menampilkan dashboard.
 
@@ -180,7 +191,11 @@ DELETE FROM rate_limits;
 
 | Gejala | Penyebab & solusi |
 |---|---|
-| Katalog kosong / "Katalog gagal dimuat" | API tidak terjangkau atau database kosong. Jalankan `npm run smoke -- --url <domain>`, lalu `npm run db:push` |
+| Katalog kosong / "Katalog gagal dimuat" | API tidak terjangkau atau database kosong. Jalankan `npm run smoke -- --url <domain>`; pesan dari `/api/health` menunjukkan penyebabnya |
+| `/api/health` 503 `DB_AUTH_FAILED` | `TURSO_AUTH_TOKEN` bukan token untuk `TURSO_DATABASE_URL` itu (token dari database lain atau sudah dirotasi). Salin ulang dari `turso db tokens create` |
+| `/api/health` 503 `DB_UNAVAILABLE` | URL database salah atau tidak bisa dihubungi. Pastikan formatnya `libsql://...` tanpa garis miring di akhir |
+| `/api/health` 503 `DB_SCHEMA_MISSING` | Bootstrap gagal membuat tabel (token read-only). Beri token baca-tulis, atau jalankan `npm run db:push` |
+| Login 401 padahal password benar | `adminConfigured: false` di `/api/health` berarti belum ada akun admin: set `ADMIN_EMAIL` + `ADMIN_PASSWORD` di Vercel lalu redeploy, atau jalankan `npm run admin:create` |
 | `/admin/` 404 | Pastikan `public/admin/index.html` ikut ter-deploy dan rewrite `/admin` aktif |
 | `/api/health` 404 setelah deploy | Project belum memakai preset **Other** atau `vercel.json` tidak ikut ter-commit sehingga rewrite `/api/:path*` tidak aktif. Set `Framework Preset: Other` di Settings → Build & Development, lalu redeploy |
 | `/api/health` 200 tapi katalog kosong | Database kosong: jalankan `npm run db:push` dengan env Turso produksi |

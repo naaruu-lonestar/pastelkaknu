@@ -14,6 +14,7 @@ import { Hono } from "hono";
 import app from "./index";
 import type { Env } from "./types";
 import { createEnv } from "./lib/env";
+import { ensureDatabase } from "./lib/bootstrap";
 
 function loadDotEnv(): void {
   if (!existsSync(".env")) return;
@@ -41,6 +42,13 @@ try {
   console.error(
     "Buat file .env dari .env.example, lalu isi TURSO_DATABASE_URL (boleh file:.local/pastel-ibu.db untuk lokal).",
   );
+  process.exit(1);
+}
+
+try {
+  await ensureDatabase(env);
+} catch (error) {
+  console.error("Gagal menyiapkan database:", error);
   process.exit(1);
 }
 

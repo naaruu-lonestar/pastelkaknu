@@ -93,9 +93,11 @@ Ringkas (detail di [SETUP.md](SETUP.md#5-deploy-ke-vercel)):
 1. Buat database Turso, ambil `libsql://…` URL dan token.
 2. Import repo GitHub ini di Vercel, tambahkan environment variable
    `TURSO_DATABASE_URL`, `TURSO_AUTH_TOKEN`, `BUSINESS_NAME`, `WHATSAPP_NUMBER`,
-   `ADMIN_SESSION_TTL_HOURS`, lalu deploy.
-3. Dari mesin lokal: `npm run db:push` dan `npm run admin:create` (dengan env
-   database yang sama) untuk mengisi skema dan akun admin.
+   `ADMIN_SESSION_TTL_HOURS`, dan (sekali saja) `ADMIN_EMAIL` + `ADMIN_PASSWORD`,
+   lalu deploy.
+3. Buka `https://<domain>/api/health`. Tabel, dua produk awal, dan akun admin
+   dibuat otomatis pada permintaan pertama; tidak perlu `npm run db:push` dari
+   mesin lokal. Hapus `ADMIN_PASSWORD` dari Vercel setelah akun terbentuk.
 4. Verifikasi sekali jalan: `npm run smoke -- --url https://<domain>`
    (health, katalog, login admin, dan pesanan uji).
 
