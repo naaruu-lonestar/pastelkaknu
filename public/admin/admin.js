@@ -45,7 +45,6 @@ const state = {
   },
   products: [],
   production: null,
-  detail: null,
 };
 
 const el = {
@@ -413,10 +412,8 @@ function renderStats(stats) {
 
 function renderCapacity(capacity) {
   el.capacityDate.textContent = `· ${formatDate(capacity.date)}`;
-  const nextBadge = conditionBadge(capacity);
-  nextBadge.id = "capacity-badge";
-  el.capacityBadge.replaceWith(nextBadge);
-  el.capacityBadge = nextBadge;
+  el.capacityBadge.textContent = capacity.label || capacity.condition;
+  el.capacityBadge.className = `badge ${CONDITION_CLASS[capacity.condition] || ""}`.trim();
 
   const view = document.createDocumentFragment();
   const line = node("p", "capacity-line");
@@ -630,7 +627,6 @@ el.ordersNext.addEventListener("click", () => {
 async function openOrder(id) {
   try {
     const { order } = await api(`/orders/${encodeURIComponent(id)}`);
-    state.detail = order;
     renderOrderDetail(order);
     if (!el.orderDialog.open) el.orderDialog.showModal();
   } catch (error) {
@@ -699,7 +695,6 @@ function renderOrderDetail(order) {
   const statusSection = node("section", "detail-section");
   statusSection.append(node("h3", null, "Ubah status"));
   const form = node("form", "status-form");
-  form.id = "detail-status-form";
 
   const selectField = node("div", "field");
   const selectLabel = node("label", null, "Status baru");
@@ -746,7 +741,6 @@ function renderOrderDetail(order) {
           "warning",
         );
       }
-      state.detail = data.order;
       renderOrderDetail(data.order);
       if (state.view === "orders") loadOrders();
       if (state.view === "dashboard") loadDashboard();
