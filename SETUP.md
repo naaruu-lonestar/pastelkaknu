@@ -132,8 +132,21 @@ TURSO_DATABASE_URL=libsql://... TURSO_AUTH_TOKEN=... \
 
 ### 5.4 Verifikasi
 
-- `https://<domain>/` menampilkan dua produk (kalau kosong, cek `/api/public/products`).
+Satu perintah untuk memeriksa health, katalog, login admin, dan pembuatan pesanan uji:
+
+```bash
+ADMIN_EMAIL=admin@pastelibu.id ADMIN_PASSWORD='password-anda' \
+  npm run smoke -- --url https://<domain>
+```
+
+Pesanan uji otomatis dibatalkan (`CANCELLED`) agar tidak memakan kapasitas
+produksi; pakai `--keep` bila ingin dibiarkan berstatus `PENDING`. Tanpa
+`ADMIN_EMAIL`/`ADMIN_PASSWORD`, pemeriksaan admin dilewati.
+
+Pemeriksaan manual yang setara:
+
 - `https://<domain>/api/health` → `{"status":"ok"}`.
+- `https://<domain>/` menampilkan dua produk.
 - `https://<domain>/admin/` bisa login dan menampilkan dashboard.
 
 ## 6. Konfigurasi yang perlu diganti
@@ -167,7 +180,7 @@ DELETE FROM rate_limits;
 
 | Gejala | Penyebab & solusi |
 |---|---|
-| Katalog kosong / "Katalog gagal dimuat" | API tidak terjangkau atau database kosong. Cek `/api/health`, lalu jalankan `npm run db:push` |
+| Katalog kosong / "Katalog gagal dimuat" | API tidak terjangkau atau database kosong. Jalankan `npm run smoke -- --url <domain>`, lalu `npm run db:push` |
 | `/admin/` 404 | Pastikan `public/admin/index.html` ikut ter-deploy dan rewrite `/admin` aktif |
 | `/api/health` 404 setelah deploy | Project belum memakai preset **Other** atau `vercel.json` tidak ikut ter-commit sehingga rewrite `/api/:path*` tidak aktif. Set `Framework Preset: Other` di Settings → Build & Development, lalu redeploy |
 | `/api/health` 200 tapi katalog kosong | Database kosong: jalankan `npm run db:push` dengan env Turso produksi |

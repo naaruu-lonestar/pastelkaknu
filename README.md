@@ -96,6 +96,8 @@ Ringkas (detail di [SETUP.md](SETUP.md#5-deploy-ke-vercel)):
    `ADMIN_SESSION_TTL_HOURS`, lalu deploy.
 3. Dari mesin lokal: `npm run db:push` dan `npm run admin:create` (dengan env
    database yang sama) untuk mengisi skema dan akun admin.
+4. Verifikasi sekali jalan: `npm run smoke -- --url https://<domain>`
+   (health, katalog, login admin, dan pesanan uji).
 
 ## Keamanan
 

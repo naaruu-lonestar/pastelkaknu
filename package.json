@@ -11,7 +11,8 @@
     "typecheck": "tsc --noEmit",
     "db:push": "node scripts/db-push.mjs",
     "db:push:local": "node scripts/db-push.mjs --url file:.local/pastel-ibu.db",
-    "admin:create": "node scripts/create-admin.mjs"
+    "admin:create": "node scripts/create-admin.mjs",
+    "smoke": "node scripts/smoke.mjs"
   },
   "dependencies": {
     "@libsql/client": "^0.18.0",
