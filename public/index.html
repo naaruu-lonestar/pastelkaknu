@@ -1,0 +1,422 @@
+<!doctype html>
+<html lang="id">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Pastel Ibu — Pastel rumahan segar, pesan mudah lewat WhatsApp</title>
+    <meta
+      name="description"
+      content="Pastel Ibu membuat pastel rumahan segar setiap hari. Pesan langsung dari website, pilih jumlah, dan konfirmasi lewat WhatsApp."
+    />
+    <meta name="theme-color" content="#D97736" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Nunito+Sans:wght@400;600;700&family=Plus+Jakarta+Sans:wght@600;700;800&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="/styles.css" />
+  </head>
+  <body>
+    <a class="skip-link" href="#pesan">Langsung ke form pesanan</a>
+
+    <header class="site-header" id="atas">
+      <div class="container header-inner">
+        <a class="brand" href="#atas" aria-label="Pastel Ibu — kembali ke atas">
+          <span class="brand-mark" aria-hidden="true">
+            <svg viewBox="0 0 32 32" role="img" focusable="false">
+              <path
+                d="M4 25c0-7.2 5.4-13 12-13s12 5.8 12 13c0 1.7-1.3 3-3 3H7c-1.7 0-3-1.3-3-3Z"
+                fill="currentColor"
+                opacity=".18"
+              />
+              <path
+                d="M16 8c2.2-3.2 6-4.4 8-3 2 1.4 1.6 5.4-.6 8"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2"
+                stroke-linecap="round"
+              />
+              <path
+                d="M6 24.5c0-5.9 4.5-10.5 10-10.5s10 4.6 10 10.5"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2.4"
+                stroke-linecap="round"
+              />
+              <path
+                d="M9 24.5h14"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2.4"
+                stroke-linecap="round"
+              />
+            </svg>
+          </span>
+          <span class="brand-text">
+            <strong>Pastel Ibu</strong>
+            <small>Rumahan &amp; segar</small>
+          </span>
+        </a>
+
+        <nav class="nav" id="nav" aria-label="Navigasi utama">
+          <a href="#produk">Produk</a>
+          <a href="#keunggulan">Keunggulan</a>
+          <a href="#pesan">Cara pesan</a>
+        </nav>
+
+        <a class="btn btn-primary header-cta" href="#pesan">Pesan sekarang</a>
+
+        <button
+          class="nav-toggle"
+          type="button"
+          aria-expanded="false"
+          aria-controls="nav"
+          aria-label="Buka menu navigasi"
+        >
+          <span aria-hidden="true"></span>
+          <span aria-hidden="true"></span>
+          <span aria-hidden="true"></span>
+        </button>
+      </div>
+    </header>
+
+    <main>
+      <section class="hero">
+        <div class="container hero-inner">
+          <div class="hero-copy">
+            <p class="eyebrow">
+              <span class="dot" aria-hidden="true"></span>
+              Dibuat segar setiap hari
+            </p>
+            <h1>Pastel rumahan yang <em>renyah</em> di luar, lembut di dalam.</h1>
+            <p class="lead">
+              Pesan pastel untuk camilan keluarga, acara sekolah, rapat kantor, sampai
+              partai besar. Pilih jumlahnya di sini, lalu konfirmasi lewat WhatsApp.
+            </p>
+            <div class="hero-actions">
+              <a class="btn btn-primary" href="#pesan">Mulai pesan</a>
+              <a class="btn btn-ghost" href="#produk">Lihat produk</a>
+            </div>
+            <dl class="hero-stats">
+              <div>
+                <dt>Harga mulai</dt>
+                <dd>Rp1.000<span>/pcs</span></dd>
+              </div>
+              <div>
+                <dt>Pemesanan</dt>
+                <dd>Hari ini<span>juga bisa</span></dd>
+              </div>
+              <div>
+                <dt>Konfirmasi</dt>
+                <dd>WhatsApp<span>langsung admin</span></dd>
+              </div>
+            </dl>
+          </div>
+
+          <div class="hero-art" aria-hidden="true">
+            <div class="hero-card">
+              <div class="pastel-stack">
+                <span class="pastel pastel--back"></span>
+                <span class="pastel pastel--mid"></span>
+                <span class="pastel pastel--front"></span>
+              </div>
+                              <div class="hero-card-body">
+                <strong>Fresh from the kitchen</strong>
+                <span>Isi kentang, wortel, dan bumbu rumahan.</span>
+              </div>
+            </div>
+            <div class="hero-badge">
+              <span class="hero-badge-number" id="hero-capacity">—</span>
+              <span class="hero-badge-label">pcs kapasitas produksi harian</span>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section class="section products" id="produk">
+        <div class="container">
+          <div class="section-head">
+            <p class="eyebrow">Pilihan pastel</p>
+            <h2>Dua ukuran, satu rasa yang bikin nagih</h2>
+            <p class="section-sub">
+              Harga di bawah adalah harga satuan. Total pesanan dihitung otomatis dan
+              diperiksa ulang oleh sistem saat pesanan dikirim.
+            </p>
+          </div>
+
+          <div class="product-grid" id="product-grid" aria-busy="true">
+            <article class="product-card product-card--skeleton" aria-hidden="true"></article>
+            <article class="product-card product-card--skeleton" aria-hidden="true"></article>
+          </div>
+          <p class="products-note" id="products-note" role="status" hidden></p>
+        </div>
+      </section>
+
+      <section class="section features" id="keunggulan">
+        <div class="container">
+          <div class="section-head">
+            <p class="eyebrow">Kenapa Pastel Ibu</p>
+            <h2>Dibuat rumahan, ditangani serius</h2>
+          </div>
+
+          <ul class="feature-grid">
+            <li class="feature-card">
+              <span class="feature-icon" aria-hidden="true">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6">
+                  <path d="M12 3v3M5.6 5.6l2.1 2.1M3 12h3M18.4 5.6l-2.1 2.1M21 12h-3" stroke-linecap="round" />
+                  <path d="M7 20c0-3.9 2.2-7 5-7s5 3.1 5 7" stroke-linecap="round" />
+                  <path d="M4 20h16" stroke-linecap="round" />
+                </svg>
+              </span>
+              <h3>Selalu baru digoreng</h3>
+              <p>Produksi mengikuti pesanan harian supaya pastel sampai dalam kondisi renyah.</p>
+            </li>
+            <li class="feature-card">
+              <span class="feature-icon" aria-hidden="true">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6">
+                  <path d="M12 21s7-5.1 7-10.5A7 7 0 0 0 5 10.5C5 15.9 12 21 12 21Z" stroke-linejoin="round" />
+                  <circle cx="12" cy="10.5" r="2.6" />
+                </svg>
+              </span>
+              <h3>Isi rumahan</h3>
+              <p>Isi kentang, wortel, dan bumbu rumahan yang dimasak sendiri.</p>
+            </li>
+            <li class="feature-card">
+              <span class="feature-icon" aria-hidden="true">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6">
+                  <path d="M4 8h16M4 8v10a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8" stroke-linejoin="round" />
+                  <path d="M8 8V6a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2M9 13h6" stroke-linecap="round" />
+                </svg>
+              </span>
+              <h3>Bisa partai besar</h3>
+              <p>Pesan untuk acara, sekolah, atau reseller. Jumlah besar tetap kami terima dan konfirmasi.</p>
+            </li>
+            <li class="feature-card">
+              <span class="feature-icon" aria-hidden="true">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6">
+                  <path d="M21 11.5a8.4 8.4 0 0 1-9 8.4 9.6 9.6 0 0 1-3.3-.6L3 21l1.7-5a8.2 8.2 0 0 1-.7-3.4 8.4 8.4 0 0 1 8.5-8.4A8.4 8.4 0 0 1 21 11.5Z" stroke-linejoin="round" />
+                  <path d="M9 10.5h6M9 14h4" stroke-linecap="round" />
+                </svg>
+              </span>
+              <h3>Pesan tanpa ribet</h3>
+              <p>Isi form, dapat nomor pesanan, lalu lanjut konfirmasi ke WhatsApp admin.</p>
+            </li>
+          </ul>
+        </div>
+      </section>
+
+      <section class="section order" id="pesan">
+        <div class="container">
+          <div class="section-head">
+            <p class="eyebrow">Form pesanan</p>
+            <h2>Susun pesanan pastelmu</h2>
+            <p class="section-sub">
+              Isi data pengiriman, atur jumlah pastel, lalu kirim. Admin akan mengonfirmasi
+              ketersediaan dan pembayaran lewat WhatsApp.
+            </p>
+          </div>
+
+          <div class="order-layout">
+            <form class="order-form" id="order-form" novalidate>
+              <fieldset class="form-block">
+                <legend>
+                  <span class="step">1</span>
+                  Pilih pastel
+                </legend>
+                <div class="order-items" id="order-items" aria-busy="true"></div>
+                <p class="field-error" id="items-error" role="alert"></p>
+              </fieldset>
+
+              <fieldset class="form-block">
+                <legend>
+                  <span class="step">2</span>
+                  Data pengiriman
+                </legend>
+
+                <div class="form-grid">
+                  <div class="field">
+                    <label for="customerName">Nama pemesan</label>
+                    <input
+                      id="customerName"
+                      name="customerName"
+                      type="text"
+                      autocomplete="name"
+                      placeholder="Nama lengkap"
+                      required
+                      minlength="2"
+                      maxlength="100"
+                    />
+                    <p class="field-error" data-error-for="customerName" role="alert"></p>
+                  </div>
+
+                  <div class="field">
+                    <label for="customerPhone">Nomor WhatsApp</label>
+                    <input
+                      id="customerPhone"
+                      name="customerPhone"
+                      type="tel"
+                      inputmode="tel"
+                      autocomplete="tel"
+                      placeholder="08xxxxxxxxxx"
+                      required
+                    />
+                    <p class="field-error" data-error-for="customerPhone" role="alert"></p>
+                  </div>
+
+                  <div class="field">
+                    <label for="purpose">Keperluan</label>
+                    <select id="purpose" name="purpose" required>
+                      <option value="">Pilih keperluan</option>
+                    </select>
+                    <p class="field-error" data-error-for="purpose" role="alert"></p>
+                  </div>
+
+                  <div class="field">
+                    <label for="orderType">Jenis pesanan</label>
+                    <select id="orderType" name="orderType" required>
+                      <option value="">Pilih jenis pesanan</option>
+                    </select>
+                    <p class="field-error" data-error-for="orderType" role="alert"></p>
+                  </div>
+
+                  <div class="field">
+                    <label for="deliveryDate">Tanggal kirim</label>
+                    <input id="deliveryDate" name="deliveryDate" type="date" required />
+                    <p class="field-hint">Maksimal 180 hari ke depan.</p>
+                    <p class="field-error" data-error-for="deliveryDate" role="alert"></p>
+                  </div>
+
+                  <div class="field">
+                    <label for="deliveryTime">Jam kirim</label>
+                    <input id="deliveryTime" name="deliveryTime" type="time" required />
+                    <p class="field-error" data-error-for="deliveryTime" role="alert"></p>
+                  </div>
+
+                  <div class="field field--full">
+                    <label for="deliveryLocation">Alamat / lokasi pengiriman</label>
+                    <textarea
+                      id="deliveryLocation"
+                      name="deliveryLocation"
+                      rows="3"
+                      placeholder="Nama tempat, jalan, patokan, dan kota"
+                      required
+                      minlength="5"
+                      maxlength="500"
+                    ></textarea>
+                    <p class="field-error" data-error-for="deliveryLocation" role="alert"></p>
+                  </div>
+
+                  <div class="field field--full">
+                    <label for="notes">Catatan <span class="optional">(opsional)</span></label>
+                    <textarea
+                      id="notes"
+                      name="notes"
+                      rows="2"
+                      placeholder="Contoh: isi tanpa pedas, antar sebelum jam 10, dll."
+                      maxlength="500"
+                    ></textarea>
+                    <p class="field-error" data-error-for="notes" role="alert"></p>
+                  </div>
+                </div>
+              </fieldset>
+
+              <div class="form-alert" id="form-alert" role="alert" hidden></div>
+
+              <button class="btn btn-primary btn-submit" type="submit" id="submit-button">
+                Kirim pesanan
+              </button>
+              <p class="form-footnote">
+                Dengan mengirim pesanan, kamu setuju dihubungi admin lewat WhatsApp untuk
+                konfirmasi.
+              </p>
+            </form>
+
+            <aside class="order-summary" aria-labelledby="summary-title">
+              <h3 id="summary-title">Ringkasan pesanan</h3>
+              <ul class="summary-items" id="summary-items">
+                <li class="summary-empty">Belum ada pastel dipilih.</li>
+              </ul>
+              <dl class="summary-totals">
+                <div>
+                  <dt>Total jumlah</dt>
+                  <dd id="summary-quantity">0 pcs</dd>
+                </div>
+                <div class="summary-grand">
+                  <dt>Total harga</dt>
+                  <dd id="summary-total">Rp0</dd>
+                </div>
+              </dl>
+              <p class="summary-note" id="summary-capacity">
+                Kapasitas produksi harian dimuat dari pengaturan admin.
+              </p>
+              <p class="summary-note summary-note--muted">
+                Pesanan yang melebihi kapasitas tetap kami terima. Admin akan mengonfirmasi
+                ketersediaannya.
+              </p>
+            </aside>
+          </div>
+
+          <section class="order-success" id="order-success" aria-live="polite" hidden>
+            <span class="success-icon" aria-hidden="true">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="m4 12.5 5 5L20 6.5" stroke-linecap="round" stroke-linejoin="round" />
+              </svg>
+            </span>
+            <h2>Pesanan diterima!</h2>
+            <p class="success-detail">
+              Nomor pesanan <strong id="success-number">—</strong> dengan total
+              <strong id="success-total">—</strong> sudah tercatat.
+            </p>
+            <p class="success-warning" id="success-warning" hidden>
+              Jumlah pesananmu melebihi kapasitas produksi hari itu. Admin akan
+              mengonfirmasi ketersediaannya lewat WhatsApp.
+            </p>
+            <div class="success-actions">
+              <a
+                class="btn btn-whatsapp"
+                id="success-whatsapp"
+                href="#"
+                target="_blank"
+                rel="noopener"
+              >
+                Lanjut ke WhatsApp
+              </a>
+              <button class="btn btn-ghost" type="button" id="order-again">
+                Buat pesanan lain
+              </button>
+            </div>
+            <p class="success-note">
+              Simpan nomor pesanan ini untuk ditanyakan ke admin kapan saja.
+            </p>
+          </section>
+        </div>
+      </section>
+    </main>
+
+    <footer class="site-footer">
+      <div class="container footer-inner">
+        <div class="footer-brand">
+          <strong>Pastel Ibu</strong>
+          <p>Pastel rumahan, dibuat segar setiap hari.</p>
+        </div>
+        <nav class="footer-nav" aria-label="Navigasi footer">
+          <a href="#produk">Produk</a>
+          <a href="#keunggulan">Keunggulan</a>
+          <a href="#pesan">Pesan</a>
+        </nav>
+        <p class="footer-whatsapp">
+          WhatsApp: <a id="footer-whatsapp" href="#" target="_blank" rel="noopener">—</a>
+        </p>
+      </div>
+      <div class="container footer-bottom">
+        <p>© <span id="footer-year">2026</span> Pastel Ibu. Semua hak dilindungi.</p>
+        <p>Zona waktu layanan: Asia/Jakarta (WIB).</p>
+      </div>
+    </footer>
+
+    <div class="toast" id="toast" role="status" aria-live="polite" hidden></div>
+
+    <script src="/app.js" defer></script>
+  </body>
+</html>

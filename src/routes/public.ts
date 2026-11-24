@@ -4,7 +4,7 @@ import type { AppEnv } from "../types";
 import { ORDER_TYPES, PURPOSES } from "../types";
 import { clientIp, fail, readJson, zodDetails } from "../lib/http";
 import { consumeRateLimit } from "../lib/rate-limit";
-import { createOrder, OrderValidationError } from "../lib/orders";
+import { createOrder, getCapacity, OrderValidationError } from "../lib/orders";
 import { jakartaToday } from "../lib/time";
 
 const app = new Hono<AppEnv>();
@@ -100,11 +100,16 @@ app.post("/orders", async (c) => {
 
   try {
     const result = await createOrder(c.env, parsed.data);
+    const capacity = await getCapacity(c.env.DB, result.order.deliveryDate);
     return c.json(
       {
         order: result.order,
         duplicate: result.duplicate,
         whatsapp: result.whatsapp,
+        capacity,
+        capacityWarning:
+          result.order.status !== "CANCELLED" &&
+          capacity.totalQuantity > capacity.dailyCapacity,
       },
       result.duplicate ? 200 : 201,
     );
