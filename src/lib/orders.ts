@@ -1,4 +1,5 @@
 import type { Env, OrderStatus } from "../types";
+import type { Database } from "./database";
 import {
   addDays,
   isIsoDate,
@@ -46,7 +47,7 @@ export function capacityStatus(
   };
 }
 
-export async function getDailyCapacity(db: D1Database): Promise<number> {
+export async function getDailyCapacity(db: Database): Promise<number> {
   const row = await db
     .prepare("SELECT daily_capacity FROM production_settings WHERE id = 'default'")
     .first<{ daily_capacity: number }>();
@@ -60,7 +61,7 @@ export interface DayCapacity extends CapacityStatus {
 }
 
 export async function getCapacity(
-  db: D1Database,
+  db: Database,
   date: string,
 ): Promise<DayCapacity> {
   const dailyCapacity = await getDailyCapacity(db);
@@ -251,7 +252,7 @@ export function mapOrder(row: OrderRow, items: ItemRow[] = []): OrderView {
 }
 
 export async function loadOrderDetail(
-  db: D1Database,
+  db: Database,
   idOrNumber: string,
 ): Promise<OrderDetail | null> {
   const order = await db
@@ -344,7 +345,7 @@ export function buildWhatsapp(
 }
 
 async function findByIdempotencyKey(
-  db: D1Database,
+  db: Database,
   key: string,
 ): Promise<OrderDetail | null> {
   const row = await db

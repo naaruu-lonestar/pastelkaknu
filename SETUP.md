@@ -1,12 +1,15 @@
 # Setup Pastel Ibu
 
-Panduan menjalankan proyek secara lokal dan menyiapkannya untuk produksi.
+Panduan menjalankan proyek secara lokal dan men-deploy ke Vercel dengan database
+Turso (libSQL).
 
 ## Prasyarat
 
 - Node.js 20+ dan npm
-- Akun Cloudflare (untuk deploy) atau hosting Worker lain yang kompatibel
-- Tidak perlu Docker; D1 berjalan lokal lewat Wrangler
+- Akun [Vercel](https://vercel.com) (hosting)
+- Akun [Turso](https://turso.tech) (database SQLite terkelola)
+
+Tidak perlu Docker, tidak perlu Cloudflare.
 
 ## 1. Pasang dependency
 
@@ -14,115 +17,147 @@ Panduan menjalankan proyek secara lokal dan menyiapkannya untuk produksi.
 npm install
 ```
 
-Versi Wrangler 4.x membutuhkan `@cloudflare/workers-types` 5.x. Jangan menurunkan
-versi types tersebut tanpa menguji ulang `npm run typecheck`.
+## 2. Siapkan database
 
-## 2. Siapkan database lokal
+### Lokal (paling cepat)
 
-`wrangler dev` menyimpan data di `.wrangler/state` (gitignored).
-
-```bash
-npm run db:migrate     # migrations/0001_init.sql
-npm run db:seed        # 2 produk + production_settings default 300 pcs
-```
-
-Cek isinya:
+Database lokal cukup berupa file SQLite, dibuat otomatis oleh libSQL.
 
 ```bash
-npx wrangler d1 execute pastel-ibu-db --local \
-  --command "SELECT id, name, price, is_active FROM products"
+cp .env.example .env
+# ubah satu baris ini di .env:
+#   TURSO_DATABASE_URL=file:.local/pastel-ibu.db
+npm run db:push:local
 ```
+
+Perintah itu membuat 8 tabel, 2 produk (`pastel-1000`, `pastel-2000`), dan
+`production_settings` dengan kapasitas 300 pcs/hari. Idempoten — aman diulang.
+
+### Turso (untuk deploy)
+
+```bash
+# sekali saja
+turso db create pastel-ibu
+turso db show pastel-ibu --url          # → libsql://pastel-ibu-xxxx.turso.io
+turso db tokens create pastel-ibu       # → token (simpan di secret manager)
+```
+
+Lalu isi `.env`:
+
+```bash
+TURSO_DATABASE_URL=libsql://pastel-ibu-xxxx.turso.io
+TURSO_AUTH_TOKEN=token-dari-perintah-di-atas
+```
+
+dan terapkan skema:
+
+```bash
+npm run db:push
+```
+
+Bisa juga tanpa CLI Turso: buat database di dashboard Turso, salin URL dan
+buat token di menu yang sama.
 
 ## 3. Buat akun admin
 
-Tidak ada registrasi publik; akun hanya lahir dari skrip ini (atau SQL manual).
-Password minimal 10 karakter, role `OWNER` atau `STAFF`.
+Tidak ada registrasi publik; akun hanya lahir dari skrip ini. Password minimal
+10 karakter, role `OWNER` atau `STAFF`.
 
 ```bash
 ADMIN_EMAIL=admin@pastelibu.id \
-ADMIN_PASSWORD='ganti-password-ini' \
+ADMIN_PASSWORD='password-panjang-anda' \
 ADMIN_NAME='Ibu Pastel' \
 ADMIN_ROLE=OWNER \
 npm run admin:create
 ```
 
+Untuk database lokal tambahkan `-- --url file:.local/pastel-ibu.db`.
 Skrip bersifat idempoten: email yang sama akan direset (password, nama, role) dan
-sesi lamanya dihapus. Role `STAFF` bisa melihat dashboard dan mengubah status
-pesanan, tetapi tidak bisa mengubah produk atau kapasitas produksi.
+sesi lamanya dihapus. Password dikirim lewat environment, bukan argumen, supaya
+tidak tersimpan di riwayat shell.
+
+Role `STAFF` bisa melihat dashboard dan mengubah status pesanan, tetapi tidak bisa
+mengubah produk atau kapasitas produksi.
 
 ## 4. Jalankan
 
 ```bash
-npm run dev            # wrangler dev --local --port 8787
+npm run dev            # http://localhost:3000
 ```
 
-- Situs publik: <http://localhost:8787/>
-- Dashboard admin: <http://localhost:8787/admin>
-- Health check: <http://localhost:8787/api/health>
+- Situs publik: <http://localhost:3000/>
+- Dashboard admin: <http://localhost:3000/admin/>
+- Health check: <http://localhost:3000/api/health>
 
 Perintah lain:
 
 ```bash
 npm run typecheck      # tsc --noEmit
-node --check public/app.js public/admin/admin.js
 ```
 
-## 5. Konfigurasi yang perlu diganti
+## 5. Deploy ke Vercel
+
+### 5.1 Import project
+
+1. Buka <https://vercel.com/new>, pilih repo `pastelkaknu`.
+2. Framework Preset: **Other** (dibiarkan apa adanya; `vercel.json` sudah mengatur
+   `framework: null`, output `public/`, dan rewrite `/admin`).
+3. Tidak perlu Build Command maupun Output Directory khusus.
+
+### 5.2 Environment variables
+
+Tambahkan untuk **Production** dan **Preview**:
+
+| Nama | Contoh | Keterangan |
+|---|---|---|
+| `TURSO_DATABASE_URL` | `libsql://pastel-ibu-xxxx.turso.io` | URL database |
+| `TURSO_AUTH_TOKEN` | `eyJ…` | token database (rahasia) |
+| `BUSINESS_NAME` | `Pastel Ibu` | nama usaha |
+| `WHATSAPP_NUMBER` | `6281234567890` | ganti dengan nomor asli |
+| `ADMIN_SESSION_TTL_HOURS` | `8` | 1–72 |
+
+Jangan menaruh nilai ini di file mana pun di repo. Setelah env tersimpan, deploy.
+
+### 5.3 Isi database produksi
+
+Dari mesin lokal, dengan env database produksi:
+
+```bash
+TURSO_DATABASE_URL=libsql://... TURSO_AUTH_TOKEN=... npm run db:push
+TURSO_DATABASE_URL=libsql://... TURSO_AUTH_TOKEN=... \
+  ADMIN_EMAIL=admin@pastelibu.id ADMIN_PASSWORD='password-panjang' \
+  npm run admin:create
+```
+
+### 5.4 Verifikasi
+
+- `https://<domain>/` menampilkan dua produk (kalau kosong, cek `/api/public/products`).
+- `https://<domain>/api/health` → `{"status":"ok"}`.
+- `https://<domain>/admin/` bisa login dan menampilkan dashboard.
+
+## 6. Konfigurasi yang perlu diganti
 
 | Nilai | Lokasi | Keterangan |
 |---|---|---|
-| `WHATSAPP_NUMBER` | `wrangler.jsonc` → `vars` | masih placeholder `6281234567890` |
-| `BUSINESS_NAME` | `wrangler.jsonc` → `vars` | nama usaha di situs & pesan WhatsApp |
-| `ADMIN_SESSION_TTL_HOURS` | `wrangler.jsonc` → `vars` | default 8 (dibatasi 1–72) |
+| `WHATSAPP_NUMBER` | env Vercel / `.env` | masih placeholder `6281234567890` |
+| `BUSINESS_NAME` | env Vercel / `.env` | nama usaha di situs & pesan WhatsApp |
+| `ADMIN_SESSION_TTL_HOURS` | env Vercel / `.env` | default 8 (dibatasi 1–72) |
 | Kapasitas harian | Dashboard admin → Produksi | tabel `production_settings` |
-| `database_id` | `wrangler.jsonc` → `d1_databases` | masih placeholder, isi setelah `wrangler d1 create` |
-
-File `.env` **tidak** dibaca Worker saat berjalan; nilainya ada di `wrangler.jsonc`
-(atau secret/variable di dashboard hosting). `.env.example` hanya dokumentasi dan
-input untuk skrip pembuatan admin.
-
-## 6. Deploy
-
-### A. Cloudflare langsung
-
-```bash
-npx wrangler login
-npx wrangler d1 create pastel-ibu-db        # salin database_id ke wrangler.jsonc
-npm run db:migrate:remote
-npm run db:seed:remote
-node scripts/create-admin.mjs --remote \
-  --email admin@domainmu.id --password 'password-panjang' --role OWNER
-npx wrangler deploy
-```
-
-`wrangler.jsonc` sudah memuat binding `DB` dan folder aset `./public`, jadi situs
-publik dan `/admin` ikut ter-deploy dalam satu Worker.
-
-### B. Freebuff Sites
-
-1. Buat proyek Sites, lalu tambahkan penyimpanan `d1` dengan nama binding `DB`
-   untuk environment yang dituju.
-2. Deploy memakai manifest Worker: `entrypoint` hasil bundle `src/index.ts`,
-   `compatibilityDate` sesuai `wrangler.jsonc`, dan `assetsDirectory: "./public"`.
-3. Jalankan migrasi + seed + pembuatan admin ke database remote (lihat langkah A,
-   memakai `--remote`).
-4. Deploy dulu, baru atur variabel (`WHATSAPP_NUMBER`, dll.) di panel hosting, lalu
-   deploy ulang bila perlu.
-
-Situs ini belum pernah di-deploy; `database_id` masih placeholder, jadi jangan
-menganggap konfigurasi remote sudah aktif.
+| Harga & ketersediaan produk | Dashboard admin → Produk | tabel `products` |
 
 ## 7. Reset data lokal
 
 ```bash
-rm -rf .wrangler/state
-npm run db:migrate && npm run db:seed
+rm -rf .local
+npm run db:push:local
 ```
 
-Atau bersihkan sebagian:
+Atau bersihkan sebagian (butuh `turso db shell` untuk database remote):
 
-```bash
-npx wrangler d1 execute pastel-ibu-db --local --command "DELETE FROM orders; DELETE FROM admin_sessions;"
+```sql
+DELETE FROM orders;
+DELETE FROM admin_sessions;
+DELETE FROM rate_limits;
 ```
 
 (`order_items` dan `order_status_history` ikut terhapus lewat `ON DELETE CASCADE`.)
@@ -131,9 +166,10 @@ npx wrangler d1 execute pastel-ibu-db --local --command "DELETE FROM orders; DEL
 
 | Gejala | Penyebab & solusi |
 |---|---|
-| `/admin` menampilkan JSON 404 | Worker tidak menyajikan aset; pastikan `assets.directory` ada di `wrangler.jsonc` |
+| Katalog kosong / "Katalog gagal dimuat" | API tidak terjangkau atau database kosong. Cek `/api/health`, lalu jalankan `npm run db:push` |
+| `/admin/` 404 | Pastikan `public/admin/index.html` ikut ter-deploy dan rewrite `/admin` aktif |
+| API membalas 503 `Server belum dikonfigurasi` | `TURSO_DATABASE_URL` belum diisi di environment Vercel; isi lalu redeploy |
 | Login selalu 401 | Akun belum dibuat / password salah; ulangi langkah 3 |
 | 429 saat login | Rate limit 5/15 menit per email atau 10/15 menit per IP; tunggu atau hapus baris `rate_limits` |
 | 403 saat menyimpan produk | Login sebagai `OWNER`, bukan `STAFF` |
-| `ERESOLVE` saat `npm install` | Versi `@cloudflare/workers-types` harus 5.x untuk Wrangler 4.x |
-| Harga di situs berbeda dengan database | Cache `GET /api/public/*` 60 detik; tunggu atau muat ulang |
+| Perubahan kapasitas tidak terlihat | `GET /api/public/config` di-cache 60 detik oleh browser/CDN |

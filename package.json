@@ -1,24 +1,27 @@
 {
   "name": "pastel-ibu",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "private": true,
   "type": "module",
+  "engines": {
+    "node": ">=20"
+  },
   "scripts": {
-    "dev": "wrangler dev --local --port 8787",
+    "dev": "tsx watch src/dev.ts",
     "typecheck": "tsc --noEmit",
-    "db:migrate": "wrangler d1 migrations apply pastel-ibu-db --local",
-    "db:migrate:remote": "wrangler d1 migrations apply pastel-ibu-db --remote",
-    "db:seed": "wrangler d1 execute pastel-ibu-db --local --file=seeds/0001_products.sql",
-    "db:seed:remote": "wrangler d1 execute pastel-ibu-db --remote --file=seeds/0001_products.sql",
+    "db:push": "node scripts/db-push.mjs",
+    "db:push:local": "node scripts/db-push.mjs --url file:.local/pastel-ibu.db",
     "admin:create": "node scripts/create-admin.mjs"
   },
   "dependencies": {
+    "@libsql/client": "^0.18.0",
     "hono": "^4.6.14",
     "zod": "^3.24.1"
   },
   "devDependencies": {
-    "@cloudflare/workers-types": "^5.20261123.1",
-    "typescript": "^5.7.2",
-    "wrangler": "^4.0.0"
+    "@hono/node-server": "^2.1.11",
+    "@types/node": "^26.6.6",
+    "tsx": "^4.23.15",
+    "typescript": "^5.7.2"
   }
 }

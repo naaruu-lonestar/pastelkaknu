@@ -1,7 +1,8 @@
 # API Pastel Ibu
 
-Base URL lokal: `http://localhost:8787`.
+Base URL lokal: `http://localhost:3000`; di produksi `https://<domain-vercel>`.
 Semua request dan respons JSON (`Content-Type: application/json`), kecuali aset statis.
+Semua endpoint di bawah `/api/*` dilayani satu Vercel Function (`api/[...path].ts`).
 
 ## Format error
 
@@ -173,6 +174,6 @@ Nilai ini langsung dipakai perhitungan kapasitas dan `GET /api/public/config`.
 
 ## Lain-lain
 
-- `GET /api/health` → `{ "status": "ok" }` (503 `degraded` bila D1 tidak terjangkau).
+- `GET /api/health` → `{ "status": "ok" }` (503 `degraded` bila database tidak terjangkau).
 - Kondisi kapasitas: `<80%` `AMAN`, `<100%` `HAMPIR_PENUH`, `>=100%` `MELEBIHI`.
 - Status pesanan: `PENDING`, `CONFIRMED`, `PROCESSING`, `COMPLETED`, `CANCELLED`.

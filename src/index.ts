@@ -6,11 +6,28 @@ import adminRoutes from "./routes/admin";
 
 const app = new Hono<AppEnv>();
 
+const CONTENT_SECURITY_POLICY = [
+  "default-src 'self'",
+  "script-src 'self'",
+  "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com",
+  "font-src https://fonts.gstatic.com",
+  "img-src 'self' https: data:",
+  "connect-src 'self'",
+  "form-action 'self'",
+  "base-uri 'none'",
+  "frame-ancestors 'none'",
+].join("; ");
+
 app.use("*", async (c, next) => {
   await next();
   c.header("X-Content-Type-Options", "nosniff");
   c.header("Referrer-Policy", "no-referrer");
   c.header("X-Frame-Options", "DENY");
+  c.header("Content-Security-Policy", CONTENT_SECURITY_POLICY);
+  c.header("Permissions-Policy", "geolocation=(), camera=(), microphone=(), payment=()");
+  if (new URL(c.req.url).protocol === "https:") {
+    c.header("Strict-Transport-Security", "max-age=63072000; includeSubDomains");
+  }
 });
 
 app.use("/api/admin/*", async (c, next) => {

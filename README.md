@@ -2,16 +2,17 @@
 
 Sistem pemesanan pastel rumahan: situs publik untuk pelanggan, dashboard admin
 untuk mengelola pesanan, produk, dan kapasitas produksi. Semua data lewat satu
-backend Cloudflare Worker + D1; tidak ada akses database dari browser.
+backend; tidak ada akses database dari browser.
 
 ## Stack
 
 | Bagian | Teknologi |
 |---|---|
-| Runtime | Cloudflare Workers (Hono + TypeScript) |
-| Database | Cloudflare D1 (SQLite), migrasi SQL di `migrations/` |
+| Hosting | Vercel (satu project: aset statis + Vercel Functions) |
+| Runtime API | Node.js 20 + Hono + TypeScript |
+| Database | Turso (libSQL, dialek SQLite), migrasi SQL di `migrations/` |
 | Validasi | zod |
-| Frontend | HTML/CSS/JS statis di `public/`, dilayani Worker lewat binding `ASSETS` |
+| Frontend | HTML/CSS/JS statis di `public/`, dilayani CDN Vercel |
 | Auth admin | Email + password (PBKDF2-SHA256 210.000 iterasi), sesi cookie httpOnly |
 | Zona waktu | Asia/Jakarta (WIB) |
 
@@ -52,35 +53,65 @@ Pemisahan dijaga di server, bukan di subdomain.
 ## Struktur
 
 ```
-migrations/0001_init.sql   Skema D1 (8 tabel + index)
+api/[...path].ts           Entry Vercel Functions: semua /api/* ke satu Hono app
+vercel.json                Static public/, rewrite /admin, header keamanan
+migrations/0001_init.sql   Skema database (8 tabel + index)
 seeds/0001_products.sql    Seed produk + kapasitas default (idempoten)
 src/index.ts               Aplikasi Hono, routing, security header
+src/dev.ts                 Server pengembangan lokal (Node)
 src/routes/public.ts       API publik: produk, config, buat pesanan
 src/routes/admin.ts        API admin: auth, dashboard, pesanan, produk, produksi
+src/lib/database.ts        Adapter database bergaya D1 di atas libSQL/Turso
+src/lib/env.ts             Pembacaan variabel lingkungan runtime
 src/lib/                   orders, session, password, rate-limit, time, http
 src/middleware/auth.ts     requireAdmin / requireRole
 public/                    Situs publik (index.html, styles.css, app.js)
 public/admin/              Dashboard admin (index.html, admin.css, admin.js)
+scripts/db-push.mjs        Terapkan migrasi + seed
 scripts/create-admin.mjs   Satu-satunya cara membuat akun admin
 ```
 
-## Mulai cepat
+## Mulai cepat (lokal)
 
 ```bash
 npm install
-npm run db:migrate      # buat tabel di D1 lokal
-npm run db:seed         # 2 produk + kapasitas 300
-ADMIN_EMAIL=admin@pastelibu.id ADMIN_PASSWORD='ganti-password-ini' \
-  npm run admin:create
-npm run dev             # http://localhost:8787
+cp .env.example .env      # isi TURSO_DATABASE_URL=file:.local/pastel-ibu.db
+npm run db:push:local     # buat tabel + 2 produk + kapasitas 300
+ADMIN_EMAIL=admin@pastelibu.id ADMIN_PASSWORD='password-panjang-anda' \
+  npm run admin:create -- --url file:.local/pastel-ibu.db
+npm run dev               # http://localhost:3000
 ```
 
-Lalu buka `/` untuk situs publik dan `/admin` untuk dashboard.
+Lalu buka `/` untuk situs publik dan `/admin/` untuk dashboard.
 Panduan lengkap (termasuk deploy) ada di [SETUP.md](SETUP.md); daftar endpoint di
 [API.md](API.md).
 
+## Deploy ke Vercel
+
+Ringkas (detail di [SETUP.md](SETUP.md#5-deploy-ke-vercel)):
+
+1. Buat database Turso, ambil `libsql://…` URL dan token.
+2. Import repo GitHub ini di Vercel, tambahkan environment variable
+   `TURSO_DATABASE_URL`, `TURSO_AUTH_TOKEN`, `BUSINESS_NAME`, `WHATSAPP_NUMBER`,
+   `ADMIN_SESSION_TTL_HOURS`, lalu deploy.
+3. Dari mesin lokal: `npm run db:push` dan `npm run admin:create` (dengan env
+   database yang sama) untuk mengisi skema dan akun admin.
+
+## Keamanan
+
+- Password admin tidak pernah disimpan mentah: PBKDF2-SHA256 210.000 iterasi +
+  salt acak, perbandingan timing-safe, dan kerja hash palsu untuk email tak dikenal.
+- Token sesi disimpan sebagai hash SHA-256; cookie `httpOnly`, `SameSite=Strict`,
+  `Secure` di https, TTL dibatasi 1–72 jam.
+- Semua nilai SQL dikirim sebagai parameter binding (tidak ada string SQL yang
+  dirangkai dari input pengguna).
+- Semua data dari server dirender dengan `textContent` (tanpa `innerHTML`).
+- Header: CSP, HSTS (https), nosniff, Referrer-Policy, X-Frame-Options,
+  Permissions-Policy.
+- Kredensial tidak pernah ada di repo: password admin dibuat lewat skrip dengan
+  input dari environment, dan `.env` di-gitignore.
+
 ## Status
 
-- Phase 1–3 selesai: backend, situs publik, dashboard admin.
-- Belum di-deploy: `database_id` di `wrangler.jsonc` masih placeholder.
-- Nomor WhatsApp masih placeholder (`6281234567890`) — ganti di `wrangler.jsonc`.
+- Kode siap deploy ke Vercel + Turso; project Vercel dan database dibuat oleh pemilik akun.
+- Nomor WhatsApp masih placeholder (`6281234567890`) — ganti di environment variable.

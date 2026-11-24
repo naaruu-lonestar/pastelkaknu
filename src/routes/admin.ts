@@ -42,7 +42,15 @@ const productFields = {
   name: z.string().trim().min(2).max(100),
   price: z.number().int().min(1).max(10_000_000),
   description: z.string().trim().max(500),
-  imageUrl: z.string().trim().max(500).nullable(),
+  imageUrl: z
+    .string()
+    .trim()
+    .max(500)
+    .nullable()
+    .refine(
+      (value) => value === null || value === "" || value.startsWith("https://"),
+      "URL gambar harus diawali https://",
+    ),
   isActive: z.boolean(),
   sortOrder: z.number().int().min(0).max(1000),
 };

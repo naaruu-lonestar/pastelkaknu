@@ -1,3 +1,5 @@
+import type { Database } from "./database";
+
 export interface RateLimitResult {
   allowed: boolean;
   limit: number;
@@ -9,7 +11,7 @@ export interface RateLimitResult {
  * Fixed-window rate limit di D1. Satu baris per key, direset saat jendela habis.
  */
 export async function consumeRateLimit(
-  db: D1Database,
+  db: Database,
   key: string,
   limit: number,
   windowSeconds: number,
@@ -49,7 +51,7 @@ export async function consumeRateLimit(
   };
 }
 
-export async function resetRateLimit(db: D1Database, keys: string[]): Promise<void> {
+export async function resetRateLimit(db: Database, keys: string[]): Promise<void> {
   if (keys.length === 0) return;
   await db
     .prepare(

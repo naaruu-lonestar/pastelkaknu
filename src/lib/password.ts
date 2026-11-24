@@ -45,8 +45,11 @@ async function derive(
     false,
     ["deriveBits"],
   );
+  // Salinan memastikan salt memakai ArrayBuffer biasa (bukan SharedArrayBuffer),
+  // sesuai tipe BufferSource pada WebCrypto.
+  const saltBytes = new Uint8Array(salt);
   const bits = await crypto.subtle.deriveBits(
-    { name: "PBKDF2", salt, iterations, hash: "SHA-256" },
+    { name: "PBKDF2", salt: saltBytes, iterations, hash: "SHA-256" },
     key,
     KEY_LENGTH * 8,
   );

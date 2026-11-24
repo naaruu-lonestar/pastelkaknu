@@ -21,9 +21,21 @@ export function zodDetails(error: ZodError) {
 }
 
 export function clientIp(c: Context): string {
+  // x-real-ip diisi platform (Vercel), tidak bisa dipalsukan lewat body/header
+  // permintaan. Nilai pertama x-forwarded-for berasal dari klien, jadi hanya
+  // dipakai sebagai upaya terakhir.
+  const realIp = c.req.header("x-real-ip");
+  if (realIp) return realIp.trim();
+
+  const cfIp = c.req.header("cf-connecting-ip");
+  if (cfIp) return cfIp.trim();
+
   const forwarded = c.req.header("x-forwarded-for");
-  if (c.req.header("cf-connecting-ip")) return c.req.header("cf-connecting-ip") as string;
-  if (forwarded) return forwarded.split(",")[0].trim();
+  if (forwarded) {
+    const hops = forwarded.split(",").map((hop) => hop.trim()).filter(Boolean);
+    if (hops.length > 0) return hops[hops.length - 1];
+  }
+
   return "unknown";
 }
 

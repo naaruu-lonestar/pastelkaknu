@@ -1,3 +1,5 @@
+import type { Database } from "./lib/database";
+
 export const ORDER_STATUSES = [
   "PENDING",
   "CONFIRMED",
@@ -24,7 +26,7 @@ export const ORDER_TYPES = ["Reguler", "Partai besar / Event"] as const;
 export type OrderType = (typeof ORDER_TYPES)[number];
 
 export interface Env {
-  DB: D1Database;
+  DB: Database;
   BUSINESS_NAME?: string;
   WHATSAPP_NUMBER?: string;
   ADMIN_SESSION_TTL_HOURS?: string;
