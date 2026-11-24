@@ -2,7 +2,8 @@
 
 Base URL lokal: `http://localhost:3000`; di produksi `https://<domain-vercel>`.
 Semua request dan respons JSON (`Content-Type: application/json`), kecuali aset statis.
-Semua endpoint di bawah `/api/*` dilayani satu Vercel Function (`api/[...path].ts`).
+Semua endpoint di bawah `/api/*` dilayani satu Vercel Function (`api/handler.ts`),
+yang dipanggil lewat rewrite `/api/:path*` → `/api/handler?route=:path*`.
 
 ## Format error
 

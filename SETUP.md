@@ -101,7 +101,8 @@ npm run typecheck      # tsc --noEmit
 
 1. Buka <https://vercel.com/new>, pilih repo `pastelkaknu`.
 2. Framework Preset: **Other** (dibiarkan apa adanya; `vercel.json` sudah mengatur
-   `framework: null`, output `public/`, dan rewrite `/admin`).
+   `framework: null`, output `public/`, rewrite `/admin`, dan rewrite
+   `/api/:path*` ke satu function `api/handler.ts`).
 3. Tidak perlu Build Command maupun Output Directory khusus.
 
 ### 5.2 Environment variables
@@ -168,7 +169,8 @@ DELETE FROM rate_limits;
 |---|---|
 | Katalog kosong / "Katalog gagal dimuat" | API tidak terjangkau atau database kosong. Cek `/api/health`, lalu jalankan `npm run db:push` |
 | `/admin/` 404 | Pastikan `public/admin/index.html` ikut ter-deploy dan rewrite `/admin` aktif |
-| `/api/health` 404 setelah deploy | Project belum memakai preset **Other**. Set `Framework Preset: Other` di Settings → Build & Development, pastikan `vercel.json` ikut ter-commit, lalu redeploy. Seluruh `/api/*` dilayani satu function `api/[...path].ts` |
+| `/api/health` 404 setelah deploy | Project belum memakai preset **Other** atau `vercel.json` tidak ikut ter-commit sehingga rewrite `/api/:path*` tidak aktif. Set `Framework Preset: Other` di Settings → Build & Development, lalu redeploy |
+| `/api/health` 200 tapi katalog kosong | Database kosong: jalankan `npm run db:push` dengan env Turso produksi |
 | API membalas 503 `Server belum dikonfigurasi` | `TURSO_DATABASE_URL` belum diisi di environment Vercel; isi lalu redeploy |
 | Login selalu 401 | Akun belum dibuat / password salah; ulangi langkah 3 |
 | 429 saat login | Rate limit 5/15 menit per email atau 10/15 menit per IP; tunggu atau hapus baris `rate_limits` |

@@ -53,8 +53,8 @@ Pemisahan dijaga di server, bukan di subdomain.
 ## Struktur
 
 ```
-api/[...path].ts           Entry Vercel Functions: semua /api/* ke satu Hono app
-vercel.json                Static public/, rewrite /admin, header keamanan
+api/handler.ts             Satu Vercel Function untuk semua /api/* (dipanggil via rewrite)
+vercel.json                Static public/, rewrite /api/* dan /admin, header keamanan
 migrations/0001_init.sql   Skema database (8 tabel + index)
 seeds/0001_products.sql    Seed produk + kapasitas default (idempoten)
 src/index.ts               Aplikasi Hono, routing, security header

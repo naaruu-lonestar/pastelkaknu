@@ -3,7 +3,8 @@
   "framework": null,
   "outputDirectory": "public",
   "rewrites": [
-    { "source": "/admin", "destination": "/admin/index.html" }
+    { "source": "/admin", "destination": "/admin/index.html" },
+    { "source": "/api/:path*", "destination": "/api/handler?route=:path*" }
   ],
   "headers": [
     {
