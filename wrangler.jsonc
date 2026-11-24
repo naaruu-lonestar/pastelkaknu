@@ -1,0 +1,22 @@
+{
+  "$schema": "node_modules/wrangler/config-schema.json",
+  "name": "pastel-ibu",
+  "main": "src/index.ts",
+  "compatibility_date": "2025-01-01",
+  "observability": {
+    "enabled": true
+  },
+  "vars": {
+    "BUSINESS_NAME": "Pastel Ibu",
+    "WHATSAPP_NUMBER": "6281234567890",
+    "ADMIN_SESSION_TTL_HOURS": "8"
+  },
+  "d1_databases": [
+    {
+      "binding": "DB",
+      "database_name": "pastel-ibu-db",
+      "database_id": "6f1f6f0e-0b1f-4c1f-9a1f-000000000001",
+      "migrations_dir": "migrations"
+    }
+  ]
+}
